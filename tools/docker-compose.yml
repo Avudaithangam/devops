@@ -1,0 +1,39 @@
+version: '3.9'
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-jdk11
+    privileged: true
+    user: root
+    ports:
+      - 8080:8080
+      - 50000:50000
+    networks:
+      - devopsnet
+    container_name: jenkins
+    volumes:
+      - jenkins:/var/jenkins_home
+  nexus:
+    image: sonatype/nexus3
+    privileged: true
+    user: root
+    ports:
+      - 8081:8081
+    networks:
+      - devopsnet
+    container_name: nexus
+    volumes:
+      - nexus-data:/nexus-data sonatype/nexus3
+  sonarqube:
+    image: sonarqube:8.2-community
+    privileged: true
+    user: root
+    ports:
+      - "9000:9000"
+    networks:
+      - devopsnet
+    container_name: sonar
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_temp:/opt/sonarqube/temp
