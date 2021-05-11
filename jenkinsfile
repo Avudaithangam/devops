@@ -1,0 +1,37 @@
+timestamps {
+
+node () {
+
+	stage ('github_tomcat - Checkout') {
+  //checkout any github open source springboot project
+ 	 checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/ragsns/hello-world-spring-boot.git']]]) 
+	}
+	stage ('github_tomcat - Build') {
+ 			// Maven build step
+	withMaven(maven: 'mavenlatest') { 
+ 			if(isUnix()) {
+ 				sh "mvn package" 
+			} else { 
+ 				bat "mvn package test" 
+			} 
+ 		} 
+	}
+	stage ('github_tomcat - Codescan') {
+ 	    def scannerHome = tool name: 'sonarscannerLatest', type: 'hudson.plugins.sonar.SonarRunnerInstallation';
+	withSonarQubeEnv('localhost') {
+ 			if(isUnix()) {
+ 				sh "${scannerHome}/bin/sonar-scanner  -Dsonar.projectKey=my:project"
+			} else { 
+ 				bat "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=my:project" 
+			} 
+ 		} 
+	}
+	stage ('github_tomcat - Docker build') {
+    	if(isUnix()) {
+ 			sh "docker build -t sample-springboot:${BUILD_NUMBER} ." 
+		} else { 
+ 			bat "docker build -t sample-springboot:${BUILD_NUMBER} ." 
+		} 
+	}
+}
+}
